@@ -1,0 +1,36 @@
+trigger:
+  branches:
+    include:
+      - packaging
+
+jobs:
+- job: CreatePackageVersion
+  displayName: 'Create Salesforce Package Version'
+  pool:
+    vmImage: 'ubuntu-latest'
+  
+  steps:
+  - task: Bash@3
+    displayName: 'Install Salesforce CLI'
+    inputs:
+      targetType: 'inline'
+      script: |
+        npm install -g sfdx-cli
+
+  - task: Bash@3
+    displayName: 'Authenticate to Salesforce'
+    inputs:
+      targetType: 'inline'
+      script: |
+        echo "Authenticating to Salesforce..."
+        sfdx auth:jwt:grant --clientid $(SF_CLIENT_ID) --jwtkeyfile $(SF_JWT_KEYFILE) --username $(SF_USERNAME) --setdefaultdevhubusername
+
+  - task: Bash@3
+    displayName: 'Create Package Version'
+    inputs:
+      targetType: 'inline'
+      script: |
+        echo "Creating package version..."
+        PACKAGE_ID=$(sfdx force:package:list --json | jq -r '.result[0].id') # Replace with your package name if necessary
+        VERSION_NUMBER="0.1.0.$(date +%s)" # Increment your versioning as needed
+        sfdx force:package:version:create --package $PACKAGE_ID --version-number $VERSION_NUMBER --installation-key-bypass --wait 10 --json
