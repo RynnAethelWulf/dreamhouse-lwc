@@ -1,7 +1,8 @@
 trigger:
+  batch: true
   branches:
     include:
-      - packaging
+      - develop
 
 jobs:
 - job: CreatePackageVersion
@@ -15,7 +16,7 @@ jobs:
     inputs:
       targetType: 'inline'
       script: |
-        npm install -g sfdx-cli
+        npm install -g @salesforce/cli
 
   - task: Bash@3
     displayName: 'Authenticate to Salesforce'
@@ -23,10 +24,31 @@ jobs:
       targetType: 'inline'
       script: |
         echo "Authenticating to Salesforce..."
-        sfdx auth:jwt:grant --clientid $(SF_CLIENT_ID) --jwtkeyfile $(SF_JWT_KEYFILE) --username $(SF_USERNAME) --setdefaultdevhubusername
+        sfdx auth:jwt:grant --clientid $(SF_CLIENT_ID) --jwtkeyfile server.key --username $(SF_USERNAME) --setdefaultdevhubusername --instanceurl $(TARGET_URL) -a DEV
+
+  - task: Bash@3
+    displayName: 'SF Validate'
+    inputs:
+      targetType: 'inline'
+      script: |
+        echo "Creating package version..."
+        PACKAGE_ID=$(sfdx force:package:list --json | jq -r '.result[0].id') # Replace with your package name if necessary
+        VERSION_NUMBER="0.1.0.$(date +%s)" # Increment your versioning as needed
+        sfdx force:package:version:create --package $PACKAGE_ID --version-number $VERSION_NUMBER --installation-key-bypass --wait 10 --json
+
+  - task: Bash@3
+    displayName: 'SF Deploy'
+    inputs:
+      targetType: 'inline'
+      script: |
+        echo "Creating package version..."
+        PACKAGE_ID=$(sfdx force:package:list --json | jq -r '.result[0].id') # Replace with your package name if necessary
+        VERSION_NUMBER="0.1.0.$(date +%s)" # Increment your versioning as needed
+        sfdx force:package:version:create --package $PACKAGE_ID --version-number $VERSION_NUMBER --installation-key-bypass --wait 10 --json
 
   - task: Bash@3
     displayName: 'Create Package Version'
+    condition: succeeded()
     inputs:
       targetType: 'inline'
       script: |
