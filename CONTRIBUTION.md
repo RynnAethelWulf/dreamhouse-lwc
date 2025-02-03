@@ -15,6 +15,7 @@
 ### CLA
 
 External contributors will be required to sign a Contributor's License
+
 Agreement. You can do so by going to https://cla.salesforce.com/sign-cla.
 
 ## Branches
