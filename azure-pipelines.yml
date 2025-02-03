@@ -32,27 +32,21 @@ jobs:
       targetType: 'inline'
       script: |
         echo "Creating package version..."
-        PACKAGE_ID=$(sfdx force:package:list --json | jq -r '.result[0].id') # Replace with your package name if necessary
-        VERSION_NUMBER="0.1.0.$(date +%s)" # Increment your versioning as needed
-        sfdx force:package:version:create --package $PACKAGE_ID --version-number $VERSION_NUMBER --installation-key-bypass --wait 10 --json
-
+        sfdx force:source:deploy -p force-app/main/default -l RunAllTestsInOrg -u $(SF_USERNAME) -c
   - task: Bash@3
     displayName: 'SF Deploy'
     inputs:
       targetType: 'inline'
       script: |
-        echo "Creating package version..."
-        PACKAGE_ID=$(sfdx force:package:list --json | jq -r '.result[0].id') # Replace with your package name if necessary
-        VERSION_NUMBER="0.1.0.$(date +%s)" # Increment your versioning as needed
-        sfdx force:package:version:create --package $PACKAGE_ID --version-number $VERSION_NUMBER --installation-key-bypass --wait 10 --json
+        sfdx force:source:deploy -p force-app/main/default -l RunAllTestsInOrg -u $(SF_USERNAME)
 
-  - task: Bash@3
-    displayName: 'Create Package Version'
-    condition: succeeded()
-    inputs:
-      targetType: 'inline'
-      script: |
-        echo "Creating package version..."
-        PACKAGE_ID=$(sfdx force:package:list --json | jq -r '.result[0].id') # Replace with your package name if necessary
-        VERSION_NUMBER="0.1.0.$(date +%s)" # Increment your versioning as needed
-        sfdx force:package:version:create --package $PACKAGE_ID --version-number $VERSION_NUMBER --installation-key-bypass --wait 10 --json
+  # - task: Bash@3
+  #   displayName: 'Create Package Version'
+  #   condition: succeeded()
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       echo "Creating package version..."
+  #       PACKAGE_ID=$(sfdx force:package:list --json | jq -r '.result[0].id') # Replace with your package name if necessary
+  #       VERSION_NUMBER="0.1.0.$(date +%s)" # Increment your versioning as needed
+  #       sfdx force:package:version:create --package $PACKAGE_ID --version-number $VERSION_NUMBER --installation-key-bypass --wait 10 --json
